@@ -6,16 +6,18 @@ Follow these steps to set up your environment and get the necessary files.
 
 First, create a Conda environment with the required Python version, and install all the required libraries.
 
+1. Create the environment
 ```bash
 conda create --name crest-env python=3.6.13
+```
+
+2. Activate the environment
+```bash
 conda activate crest-env
 ```
+
 ### 0.2: Install Required Libraries
 
-All libraries can be installed by running the following script:
-```bash
-pip install -r requirements.txt
-```
 The libraries used are:
 - flake8==5.0.4
 - h5py==3.1.0
@@ -34,6 +36,14 @@ The libraries used are:
 - jupyter==1.1.1
 - pandas==1.1.5
 - Pillow
+
+All libraries can be installed by running the following script:
+
+```bash
+pip install -r requirements.txt
+```
+
+Because this keypoint detection system uses an older implementation of SuperPoint, it is important that all the versions are as listed. 
 
 ### 0.3: Clone Repo
 
@@ -80,7 +90,7 @@ python 1_video_processing/video2img.py
   - `.png`
 
 
-## 2. Superpoint-Aided Keypoint Detection
+## 2: Superpoint-Aided Keypoint Detection
 This is an extension to [rpautrat](https://github.com/rpautrat/SuperPoint?tab=readme-ov-file)'s implementation of SuperPoint. It takes video files as input, extracts individual frames, and uses the SuperPoint network to detect and visualize keypoints on each frame.
 
 For each processed video, the tool generates:

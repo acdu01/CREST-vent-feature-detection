@@ -2,3 +2,9 @@
 *.png
 *.jpg
 src
+*.mov
+*.avi
+*.mkv
+*.flv
+*.webm
+2_sp_implementation/output
