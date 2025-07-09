@@ -17,8 +17,23 @@ All libraries can be installed by running the following script:
 pip install -r requirements.txt
 ```
 The libraries used are:
-- ffmpeg
-- joajgijajiewgjiOJARGJIXXXXXX
+- flake8==5.0.4
+- h5py==3.1.0
+- matplotlib 
+- numpy==1.19.5
+- tqdm==4.64.1
+- SuperPoint as implemented in rpautrat/SuperPoint
+- tensorboard==1.12.2
+- tensorflow==1.12.0
+- tensorflow-estimator==1.14.0
+- tensorflow-gpu==1.12.0
+- scipy==1.5.4
+- PyYAML==6.0.1
+- opencv-contrib-python==3.4.2.16
+- opencv-python==3.4.2.16
+- jupyter==1.1.1
+- pandas==1.1.5
+- Pillow
 
 ### 0.3: Clone Repo
 
@@ -46,9 +61,9 @@ You do **not** need to manually create the `output_img` folder — it will be ge
 1. Place video files in the `1_video_processing/input_vid/` directory.
 2. Run the following Python script:
 ```bash
-python video2img.py
+python 1_video_processing/video2img.py
 ```
-3. Extracted PNG frames will be saved into `1_video_processing/output_img/`.
+3. Extracted .png frames will be saved into `1_video_processing/output_img/`.
 
 
 ###  Supported Formats:
@@ -91,5 +106,6 @@ You do **not** need to manually create the `output` folder or any subfolders —
 
 1. Run the following Python script:
 ```bash
-python detect_features.py
+python 2_sp_implementation/detect_features.py
 ```
+2. Extracted .csv and .jpg files will be saved in `2_sp_implementation/output/`

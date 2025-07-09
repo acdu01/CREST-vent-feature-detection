@@ -1,1 +1,19 @@
+flake8==5.0.4
+h5py==3.1.0
+matplotlib 
+numpy==1.19.5
+tqdm==4.64.1
+-e git+ssh://git@github.com/rpautrat/SuperPoint.git@20f0fab7250bbc725a5cdd142f0bfc356643cd47#egg=superpoint
+tensorboard==1.12.2
+tensorflow==1.12.0
+tensorflow-estimator==1.14.0
+tensorflow-gpu==1.12.0
+scipy==1.5.4
+PyYAML==6.0.1
+opencv-contrib-python==3.4.2.16
+opencv-python==3.4.2.16
+jupyter==1.1.1
+pandas==1.1.5
+Pillow
 ffmpeg
+
