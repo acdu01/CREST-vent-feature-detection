@@ -1,8 +1,34 @@
 
 ## 0: Setup
+Follow these steps to set up your environment and get the necessary files.
 
+### 0.1: Create Environment
+
+First, create a Conda environment with the required Python version, and install all the required libraries.
+
+```bash
+conda create --name crest-env python=3.6.13
+conda activate crest-env
+```
+### 0.2: Install Required Libraries
+
+All libraries can be installed by running the following script:
+```bash
+pip install -r requirements.txt
+```
+The libraries used are:
+- ffmpeg
+- joajgijajiewgjiOJARGJIXXXXXX
+
+### 0.3: Clone Repo
+
+Run the following script:
+```bash
+git clone https://github.com/acdu01/CREST-vent-feature-detection.git
+```
 
 ## 1: Video Processing
+
 Input videos will be processed and frames will be extracted and saved as .png files at 6 fps. 
 
 ### 1.1: Folder Structure
@@ -54,7 +80,7 @@ The files are organized as follows:
 ```
 2_sp_implementation/
 ├── input_vid/                      # Put your video files here
-├── output/
+├── output/                         # All outputs are saved automatically
 │   ├── processing_summary.csv      
 │   ├── csv/                        # Output .csv files with keypoint xy coordinates 
 │   └── visualizations/             # Output images with keypoints highlighted
