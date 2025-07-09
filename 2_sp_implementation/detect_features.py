@@ -175,10 +175,10 @@ def run_superpoint_on_folder(input_folder, weights_path, output_dir, img_size=(6
 
 if __name__ == "__main__":
     # Set paths
-    INPUT_FOLDER = "/home/adu/crest/SuperPoint/superpoint/DATA_DIR"  # Folder containing images
-    WEIGHTS_PATH = "saved_models/sp_v6"  # Path to sp_v6 weights
-    OUTPUT_DIR = "/home/adu/crest/SuperPoint/superpoint/OUTPUT_DIR"  # Output directory for results
-    
+    INPUT_FOLDER = "1_video_processing/output_img"  # Folder containing images
+    WEIGHTS_PATH = "2_sp_implementation/saved_models/sp_v6"  # Path to sp_v6 weights
+    OUTPUT_DIR = "2_sp_implementation/output"  # Output directory for results
+
     # Run SuperPoint on all images
     summary = run_superpoint_on_folder(
         INPUT_FOLDER, 
