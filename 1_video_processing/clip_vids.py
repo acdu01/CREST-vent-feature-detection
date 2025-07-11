@@ -1,0 +1,1 @@
+"""Clips videos into smaller segments using ffmpeg."""

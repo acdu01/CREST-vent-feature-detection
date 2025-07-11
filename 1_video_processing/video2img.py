@@ -1,3 +1,5 @@
+"""Convert videos to images at a specified frame rate using ffmpeg."""
+
 import os
 import subprocess
 
