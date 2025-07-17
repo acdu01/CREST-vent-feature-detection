@@ -8,12 +8,12 @@ First, create a Conda environment with Python version 3.6.13, and install all th
 
 1. Create the environment
 ```bash
-conda create --name crest-env python=3.6.13
+conda create --name superpoint_implementation python=3.6.13
 ```
 
 2. Activate the environment
 ```bash
-conda activate crest-env
+conda activate superpoint_implementation-env
 ```
 
 ### 0.2: Install Required Libraries
