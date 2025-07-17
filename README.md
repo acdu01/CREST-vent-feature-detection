@@ -13,7 +13,7 @@ conda create --name superpoint_implementation python=3.6.13
 
 2. Activate the environment
 ```bash
-conda activate superpoint_implementation-env
+conda activate superpoint_implementation
 ```
 
 ### 0.2: Install Required Libraries
