@@ -4,6 +4,7 @@ import tensorflow as tf
 from pathlib import Path
 import pandas as pd
 from tqdm import tqdm  # For progress bar
+import shutil
 
 def preprocess_image(img_file, img_size):
     """Prepare image for input to SuperPoint (sp_v6) network."""
@@ -33,6 +34,17 @@ def extract_superpoint_keypoints(keypoint_map, keep_k_points=1000):
     keypoints = keypoints[sorted_indices]
     
     return keypoints.astype(int)
+
+def filter_dark_keypoints(keypoints, img_gray, threshold=20):
+    """
+    Remove keypoints that are too dark in the grayscale image.
+    """
+    filtered = []
+    for kp in keypoints:
+        y, x = kp[0], kp[1]
+        if img_gray[y, x] >= threshold:
+            filtered.append(kp)
+    return np.array(filtered)
 
 def draw_keypoints(image, keypoints):
     """Draw SuperPoint keypoints on the image."""
@@ -77,7 +89,13 @@ def process_image(image_path, sess, tensors, img_size, keep_k_points):
         # Extract keypoints from SuperPoint output
         keypoint_map = np.squeeze(prob_nms)
         keypoints = extract_superpoint_keypoints(keypoint_map, keep_k_points)
-        
+    
+        # Convert original image to grayscale for brightness check
+        img_gray = cv2.cvtColor(img_orig, cv2.COLOR_BGR2GRAY)
+
+        # Filter out keypoints on dark pixels
+        keypoints = filter_dark_keypoints(keypoints, img_gray, 20)
+
         # Create visualization
         img_with_kp = draw_keypoints(img_orig, keypoints)
         
@@ -95,6 +113,11 @@ def run_superpoint_on_folder(input_folder, weights_path, output_dir, img_size=(6
     output_dir = Path(output_dir)
     weights_dir = Path(weights_path)
     
+     # Clear output folder if it exists
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
     # Create output directories
     csv_dir = output_dir / "csv"
     vis_dir = output_dir / "visualizations"
