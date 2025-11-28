@@ -5,6 +5,8 @@ from pathlib import Path
 import pandas as pd
 from tqdm import tqdm  # For progress bar
 import shutil
+import os
+import glob
 
 def preprocess_image(img_file, img_size):
     """Prepare image for input to SuperPoint (sp_v6) network."""
@@ -74,6 +76,23 @@ def save_keypoints_to_csv(keypoints, output_path):
     
     return df
 
+def extract_descriptors_at_keypoints(keypoints, descriptor_map):
+    """Grab descriptor vectors aligned to the filtered keypoints."""
+    if keypoints is None or len(keypoints) == 0:
+        return np.empty((0, descriptor_map.shape[-1]), dtype=np.float32)
+
+    coords = keypoints[:, :2].astype(int)
+    descriptors = descriptor_map[coords[:, 0], coords[:, 1]]
+
+    # L2 normalize for downstream matching
+    norms = np.linalg.norm(descriptors, axis=1, keepdims=True) + 1e-8
+    return descriptors / norms
+
+def save_descriptors(descriptors, output_path):
+    """Persist descriptors as a .npy array (N x 256)."""
+    np.save(output_path, descriptors)
+    return output_path
+
 def process_image(image_path, sess, tensors, img_size, keep_k_points):
     """Process a single image with SuperPoint."""
     try:
@@ -81,13 +100,14 @@ def process_image(image_path, sess, tensors, img_size, keep_k_points):
         img_preprocessed, img_orig = preprocess_image(image_path, img_size)
         
         # Run SuperPoint inference
-        prob_nms = sess.run(
-            tensors['output'],
+        prob_nms, descriptor_map = sess.run(
+            [tensors['output'], tensors['descriptors']],
             feed_dict={tensors['input']: np.expand_dims(img_preprocessed, 0)}
         )
         
         # Extract keypoints from SuperPoint output
         keypoint_map = np.squeeze(prob_nms)
+        descriptor_map = np.squeeze(descriptor_map)
         keypoints = extract_superpoint_keypoints(keypoint_map, keep_k_points)
     
         # Convert original image to grayscale for brightness check
@@ -96,14 +116,17 @@ def process_image(image_path, sess, tensors, img_size, keep_k_points):
         # Filter out keypoints on dark pixels
         keypoints = filter_dark_keypoints(keypoints, img_gray, 20)
 
+        # Grab descriptors corresponding to the surviving keypoints
+        descriptors = extract_descriptors_at_keypoints(keypoints, descriptor_map)
+
         # Create visualization
         img_with_kp = draw_keypoints(img_orig, keypoints)
         
-        return keypoints, img_with_kp
+        return keypoints, descriptors, img_with_kp
         
     except Exception as e:
         print(f"Error processing {image_path}: {str(e)}")
-        return None, None
+        return None, None, None
 
 def run_superpoint_on_folder(input_folder, weights_path, output_dir, img_size=(640, 480), keep_k_points=1000):
     """Run SuperPoint (sp_v6) model on all images in a folder."""
@@ -114,15 +137,18 @@ def run_superpoint_on_folder(input_folder, weights_path, output_dir, img_size=(6
     weights_dir = Path(weights_path)
     
      # Clear output folder if it exists
-    if output_dir.exists():
-        shutil.rmtree(output_dir)
+    # Do NOT delete output directories during recursive runs.
+# Just create subdirectories if missing.
     output_dir.mkdir(parents=True, exist_ok=True)
+
 
     # Create output directories
     csv_dir = output_dir / "csv"
     vis_dir = output_dir / "visualizations"
+    desc_dir = output_dir / "descriptors"
     csv_dir.mkdir(parents=True, exist_ok=True)
     vis_dir.mkdir(parents=True, exist_ok=True)
+    desc_dir.mkdir(parents=True, exist_ok=True)
     
     # Verify weights path contains sp_v6
     assert weights_dir.name == "sp_v6", "Must use sp_v6 weights!"
@@ -152,14 +178,15 @@ def run_superpoint_on_folder(input_folder, weights_path, output_dir, img_size=(6
         # Get SuperPoint specific tensors
         tensors = {
             'input': graph.get_tensor_by_name('superpoint/image:0'),
-            'output': graph.get_tensor_by_name('superpoint/prob_nms:0')
+            'output': graph.get_tensor_by_name('superpoint/prob_nms:0'),
+            'descriptors': graph.get_tensor_by_name('superpoint/descriptors:0')
         }
 
         # Process each image
         results = []
         for image_path in tqdm(image_paths, desc="Processing images"):
             # Process image
-            keypoints, img_with_kp = process_image(
+            keypoints, descriptors, img_with_kp = process_image(
                 image_path, 
                 sess, 
                 tensors, 
@@ -180,12 +207,17 @@ def run_superpoint_on_folder(input_folder, weights_path, output_dir, img_size=(6
             # Save visualization
             vis_path = vis_dir / f"{image_name}_keypoints.jpg"
             cv2.imwrite(str(vis_path), img_with_kp)
+
+            # Save descriptors (aligned to rows in the CSV)
+            desc_path = desc_dir / f"{image_name}_descriptors.npy"
+            save_descriptors(descriptors, desc_path)
             
             results.append({
                 'image_name': image_name,
                 'num_keypoints': len(keypoints),
                 'csv_path': csv_path,
-                'visualization_path': vis_path
+                'visualization_path': vis_path,
+                'descriptors_path': desc_path
             })
             
         # Create summary CSV
@@ -197,19 +229,50 @@ def run_superpoint_on_folder(input_folder, weights_path, output_dir, img_size=(6
         return summary_df
 
 if __name__ == "__main__":
-    # Set paths
-    INPUT_FOLDER = "1_video_processing/output_img"  # Folder containing images
-    WEIGHTS_PATH = "2_sp_implementation/saved_models/sp_v6"  # Path to sp_v6 weights
-    OUTPUT_DIR = "2_sp_implementation/output"  # Output directory for results
-
-    # Run SuperPoint on all images
-    summary = run_superpoint_on_folder(
-        INPUT_FOLDER, 
-        WEIGHTS_PATH,
-        OUTPUT_DIR
-    )
     
-    # Print summary
-    print("\nProcessing Summary:")
-    print(f"Total images processed: {len(summary)}")
-    print(f"Average keypoints per image: {summary['num_keypoints'].mean():.1f}")
+
+    # Set paths
+    INPUT_FOLDER = Path("1_video_processing/output_img")   # Root folder containing image subfolders
+    WEIGHTS_PATH = "2_sp_implementation/saved_models/sp_v6"
+    OUTPUT_DIR = Path("2_sp_implementation/output")
+
+    all_summaries = []
+
+    # Recursively walk all subfolders containing images
+    for subfolder in INPUT_FOLDER.rglob("*"):
+        if subfolder.is_dir():
+            # Check if this folder contains any images
+            image_files = list(subfolder.glob("*.jpg")) + \
+                          list(subfolder.glob("*.png")) + \
+                          list(subfolder.glob("*.jpeg"))
+
+            if len(image_files) == 0:
+                continue  # skip empty folders
+
+            # Create matching output subfolder
+            relative_path = subfolder.relative_to(INPUT_FOLDER)
+            out_subfolder = OUTPUT_DIR / relative_path
+            out_subfolder.mkdir(parents=True, exist_ok=True)
+
+            print(f"\nProcessing folder: {subfolder}")
+            print(f"Saving results to: {out_subfolder}")
+
+            # Run SuperPoint
+            summary = run_superpoint_on_folder(
+                str(subfolder),
+                WEIGHTS_PATH,
+                str(out_subfolder)
+            )
+
+            # Store summary with context
+            summary["folder"] = str(relative_path)
+            all_summaries.append(summary)
+
+    # Print final summary
+    total_images = sum(len(s["num_keypoints"]) for s in all_summaries)
+    avg_keypoints = sum(s["num_keypoints"].mean() for s in all_summaries) / len(all_summaries)
+
+    print("\n=== Processing Summary (Recursive) ===")
+    print(f"Total folders processed: {len(all_summaries)}")
+    print(f"Total images processed: {total_images}")
+    print(f"Average keypoints per image (overall): {avg_keypoints:.1f}")

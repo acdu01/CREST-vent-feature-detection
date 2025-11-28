@@ -1,0 +1,23 @@
+# Core dependencies for SuperPoint feature detection
+# Python 3.7.7 compatible
+
+# TensorFlow 1.x for SuperPoint model (sp_v6 SavedModel format)
+# TensorFlow 1.15.x is the last 1.x version with Python 3.7 support
+tensorflow>=1.13.0,<2.0.0
+
+# Computer vision
+opencv-python>=3.4.0,<5.0.0
+
+# Scientific computing
+numpy>=1.16.0,<1.22.0  # 1.21.6 tested and working
+pandas>=0.24.0,<2.0.0
+
+# Progress bars
+tqdm>=4.30.0
+
+# For descriptor conversion (PCA-based method)
+# Optional: only needed for convert_to_sift128.py
+scikit-learn>=0.20.0,<1.1.0  # 1.0.2 tested and working
+scipy>=1.2.0,<1.8.0  # Required by scikit-learn
+
+# Note: convert_to_sift128_simple.py does not require scikit-learn

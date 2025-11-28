@@ -1,0 +1,12 @@
+# Minimal dependencies for descriptor conversion only
+# Python 3.7+ compatible
+# Use this if you only need to convert existing descriptors (not run SuperPoint detection)
+
+# Core dependencies
+numpy>=1.16.0,<1.22.0
+tqdm>=4.30.0
+
+# For PCA-based conversion (convert_to_sift128.py)
+# Comment out if only using convert_to_sift128_simple.py
+scikit-learn>=0.20.0,<1.1.0
+scipy>=1.2.0,<1.8.0

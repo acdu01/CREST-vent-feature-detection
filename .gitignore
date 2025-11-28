@@ -7,4 +7,10 @@ src
 *.mkv
 *.flv
 *.webm
-2_sp_implementation/output
+*.bin
+*.npy
+.*.swp
+*output/
+colmap/
+6_colmap/1_colmap_output/
+colmap_project/
