@@ -1,0 +1,7 @@
+# Minimal baseline; no neural model weights required.
+input:
+  kind: images
+  path: ../data/images
+output: ../runs
+device: cpu
+variants: [sift_raw]

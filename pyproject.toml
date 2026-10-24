@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crest-reconstruction"
+version = "0.1.0"
+description = "Reconstructed depth-guided underwater SfM research pipeline"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24,<3", "opencv-python-headless>=4.8,<5", "PyYAML>=6,<7"]
+
+[project.optional-dependencies]
+sfm = ["pycolmap==3.13.0"]
+depth = ["torch>=2.2", "transformers>=4.40,<5", "Pillow>=10"]
+test = ["pytest>=8"]
+
+[project.scripts]
+crest = "crest_pipeline.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["crest_pipeline*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

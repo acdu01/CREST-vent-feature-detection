@@ -1,0 +1,40 @@
+# All paths resolve relative to THIS FILE, not the shell's working directory.
+# Reconstructed defaults. Historical model checkpoints and blur parameters unknown.
+input:
+  kind: images                   # images: one folder per sequence; videos: flat video folder
+  path: ../data/images
+  fps: 1.0                       # applied only to videos; specified in paper
+  crop_top_fraction: 1.0         # no crop; paper does not specify one
+  max_long_side: null            # preserve resolution; set explicitly if necessary
+output: ../runs
+device: cpu                      # choose cuda on the cluster
+variants:
+  - sift_raw
+  - sift_depth_low
+  - sift_depth_high
+  - rdd_raw
+  - rdd_depth_low
+  - rdd_depth_high
+depth:
+  model_path: ../weights/depth-anything-v1  # local HF model+processor directory
+  mask_root: null                # optional prepared masks: <root>/<sequence>/frame_000001.png
+  higher_is_near: true           # relative inverse depth; set false for opposite mask polarity
+preprocess:
+  method: depth_sigma            # or legacy_blend; see docs/method.md
+  low_sigma: 4.0                 # NEW starting values, not recovered final settings
+  high_sigma: 12.0
+  levels: 8
+  gamma: 1.4                     # inherited from local prototype; historical value unverified
+rdd:
+  repo: ../external/rdd
+  checkpoint: ../weights/rdd.pth
+  config: rdd_cvpr.yaml
+  top_k: 4096                    # newly chosen explicit extraction settings
+  threshold: 0.01
+  ratio: 0.8                     # angular nearest-neighbor ratio test
+  max_distance: 0.7              # radians, unit-normalized descriptors
+  block_size: 256
+quality:
+  low_max: 20.0
+  high_min: 100.0
+  grouping: per_image            # reconstruct measured tiers separately; retain every frame

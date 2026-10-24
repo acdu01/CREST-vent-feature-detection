@@ -1,0 +1,9 @@
+# Select the CVPR 2025 ResNet backbone explicitly instead of upstream's newer default.
+# The exact original CREST checkpoint was not recovered. Supply a matching checkpoint.
+RDD:
+  DESCRIPTOR:
+    BACKBONE: resnet50
+    USE_22K: false
+    USE_DEFORMABLE_TRANSFORMER: true
+    NUM_FEATURE_LEVELS: 5
+    PRETRAIN_BACKBONE: false
