@@ -1,4 +1,4 @@
-# CREST: Underwater 3D Reconstruction
+# Depth-Informed Transformer Keypoints for Underwater 3D Reconstruction
 
 A research pipeline for reconstructing natural underwater structures from images
 and video. It combines depth-guided image preprocessing, feature detection and
